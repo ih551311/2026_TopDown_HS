@@ -41,6 +41,7 @@ public class PlayerController : MonoBehaviour
             {
                 if (input.x > 0)
                 {
+  
                     ChangeSprites(spriteRight);
                 }
                 else
