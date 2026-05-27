@@ -150,6 +150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameTimer
   totalTime: 30
   timerText: {fileID: 1317657590}
+  trophyCountText: {fileID: 0}
 --- !u!4 &6171007
 Transform:
   m_ObjectHideFlags: 0
@@ -224,8 +225,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uBAAC\uCC28 \uADF8\uB791\uD504\uB9AC "
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 5394a91abe282c74fb6890d9bcca0c1d, type: 2}
-  m_sharedMaterial: {fileID: 8908584214982465241, guid: 5394a91abe282c74fb6890d9bcca0c1d, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 9dd329c642b0ddb42b2c0e959fef6397, type: 2}
+  m_sharedMaterial: {fileID: 8674777134198494523, guid: 9dd329c642b0ddb42b2c0e959fef6397, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -373114,6 +373115,7 @@ MonoBehaviour:
     trophiesCollected: 0
     bestTime: 0
     totalTrophies: 0
+    lastRunTrophies: 0
 --- !u!4 &1264577433
 Transform:
   m_ObjectHideFlags: 0
@@ -373188,8 +373190,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uB0A8\uC740\uC2DC\uAC04 "
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 5394a91abe282c74fb6890d9bcca0c1d, type: 2}
-  m_sharedMaterial: {fileID: 8908584214982465241, guid: 5394a91abe282c74fb6890d9bcca0c1d, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 9dd329c642b0ddb42b2c0e959fef6397, type: 2}
+  m_sharedMaterial: {fileID: 8674777134198494523, guid: 9dd329c642b0ddb42b2c0e959fef6397, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

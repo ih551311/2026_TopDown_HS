@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
-    public float moveSpeed = 5f;
+    public float baseMoveSpeed = 5f;     // 기본 속도 (Inspector에서 수정 가능)
 
     [Header("Sprites - 8 Directions")]
     public Sprite[] spriteUp;
@@ -33,6 +33,8 @@ public class PlayerController : MonoBehaviour
     private float timer = 0f;
     private bool isMoving = false;
 
+    private float currentMoveSpeed;   // ← PlayerStats에서 가져올 실제 속도
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -45,6 +47,16 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
+        // PlayerStats에서 저장된 속도 불러오기
+        if (PlayerStats.Instance != null)
+        {
+            currentMoveSpeed = PlayerStats.Instance.GetMoveSpeed();
+        }
+        else
+        {
+            currentMoveSpeed = baseMoveSpeed;
+        }
+
         currentSprites = (spriteDown != null && spriteDown.Length > 0) ? spriteDown : null;
         if (currentSprites != null)
             sr.sprite = currentSprites[0];
@@ -53,7 +65,7 @@ public class PlayerController : MonoBehaviour
     public void OnMove(InputValue value)
     {
         input = value.Get<Vector2>();
-        velocity = input.normalized * moveSpeed;
+        velocity = input.normalized * currentMoveSpeed;   // ← currentMoveSpeed 사용
         isMoving = input.sqrMagnitude > 0.01f;
 
         if (isMoving)
@@ -82,23 +94,17 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        // === 버튼을 하나라도 누르고 있으면 소리 계속 재생 ===
         if (Input.anyKey)
         {
             if (engineSound != null && !engineSound.isPlaying)
-            {
                 engineSound.Play();
-            }
         }
         else
         {
             if (engineSound != null && engineSound.isPlaying)
-            {
                 engineSound.Stop();
-            }
         }
 
-        // === 애니메이션 ===
         if (!isMoving)
         {
             frameIndex = 0;
