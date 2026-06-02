@@ -4,7 +4,10 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
-    public float baseMoveSpeed = 5f;     // 기본 속도 (Inspector에서 수정 가능)
+    public float baseMoveSpeed = 5f;
+    public float dashSpeed = 15f;
+    public float dashDuration = 0.25f;
+    public float dashCooldown = 1.2f;
 
     [Header("Sprites - 8 Directions")]
     public Sprite[] spriteUp;
@@ -31,9 +34,11 @@ public class PlayerController : MonoBehaviour
     private Sprite[] currentSprites;
     private int frameIndex = 0;
     private float timer = 0f;
-    private bool isMoving = false;
 
-    private float currentMoveSpeed;   // ← PlayerStats에서 가져올 실제 속도
+    private float currentMoveSpeed;
+    private bool isDashing = false;
+    private float dashTimeLeft = 0f;
+    private float dashCooldownLeft = 0f;
 
     private void Awake()
     {
@@ -47,15 +52,10 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        // PlayerStats에서 저장된 속도 불러오기
         if (PlayerStats.Instance != null)
-        {
             currentMoveSpeed = PlayerStats.Instance.GetMoveSpeed();
-        }
         else
-        {
             currentMoveSpeed = baseMoveSpeed;
-        }
 
         currentSprites = (spriteDown != null && spriteDown.Length > 0) ? spriteDown : null;
         if (currentSprites != null)
@@ -65,16 +65,85 @@ public class PlayerController : MonoBehaviour
     public void OnMove(InputValue value)
     {
         input = value.Get<Vector2>();
-        velocity = input.normalized * currentMoveSpeed;   // ← currentMoveSpeed 사용
-        isMoving = input.sqrMagnitude > 0.01f;
+    }
 
-        if (isMoving)
+    private void Update()
+    {
+        // 대쉬 쿨타임 처리
+        if (dashCooldownLeft > 0) dashCooldownLeft -= Time.deltaTime;
+
+        if (isDashing)
         {
+            dashTimeLeft -= Time.deltaTime;
+            if (dashTimeLeft <= 0)
+            {
+                isDashing = false;
+                dashCooldownLeft = dashCooldown;
+            }
+        }
+
+        // Shift로 대쉬
+        if (Keyboard.current.shiftKey.wasPressedThisFrame && !isDashing && dashCooldownLeft <= 0f)
+        {
+            StartDash();
+        }
+
+        float speed = isDashing ? dashSpeed : currentMoveSpeed;
+        velocity = input.normalized * speed;
+
+        bool isActuallyMoving = input.sqrMagnitude > 0.01f;
+
+        // 엔진 소리
+        if (isActuallyMoving)
+        {
+            if (engineSound != null && !engineSound.isPlaying)
+                engineSound.Play();
+        }
+        else
+        {
+            if (engineSound != null && engineSound.isPlaying)
+                engineSound.Stop();
+        }
+
+        // 애니메이션
+        if (isActuallyMoving)
+        {
+            timer += Time.deltaTime;
+            if (timer >= frameTime)
+            {
+                timer = 0f;
+                frameIndex = (frameIndex + 1) % (currentSprites != null ? currentSprites.Length : 1);
+                if (currentSprites != null && currentSprites.Length > 0)
+                    sr.sprite = currentSprites[frameIndex];
+            }
+
             float angle = Mathf.Atan2(input.y, input.x) * Mathf.Rad2Deg;
             if (angle < 0) angle += 360f;
+            ChangeSprites(GetDirectionSprites(angle));
+        }
+        else
+        {
+            frameIndex = 0;
+            if (currentSprites != null && currentSprites.Length > 0)
+                sr.sprite = currentSprites[0];
+        }
+    }
 
-            Sprite[] newSprites = GetDirectionSprites(angle);
-            ChangeSprites(newSprites);
+    private void StartDash()
+    {
+        isDashing = true;
+        dashTimeLeft = dashDuration;
+    }
+
+    // ==================== 벽 충돌 (시간 3초 감소) ====================
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Wall"))
+        {
+            if (GameTimer.Instance != null)
+            {
+                GameTimer.Instance.ReduceTime(3f);
+            }
         }
     }
 
@@ -92,47 +161,6 @@ public class PlayerController : MonoBehaviour
         return spriteDown;
     }
 
-    private void Update()
-    {
-        if (Input.anyKey)
-        {
-            if (engineSound != null && !engineSound.isPlaying)
-                engineSound.Play();
-        }
-        else
-        {
-            if (engineSound != null && engineSound.isPlaying)
-                engineSound.Stop();
-        }
-
-        if (!isMoving)
-        {
-            frameIndex = 0;
-            if (currentSprites != null && currentSprites.Length > 0)
-                sr.sprite = currentSprites[0];
-            return;
-        }
-
-        timer += Time.deltaTime;
-
-        if (timer >= frameTime)
-        {
-            timer = 0f;
-            frameIndex++;
-
-            if (currentSprites != null && frameIndex >= currentSprites.Length)
-                frameIndex = 0;
-
-            if (currentSprites != null && currentSprites.Length > 0)
-                sr.sprite = currentSprites[frameIndex];
-        }
-    }
-
-    private void FixedUpdate()
-    {
-        rb.MovePosition(rb.position + velocity * Time.fixedDeltaTime);
-    }
-
     private void ChangeSprites(Sprite[] newSprites)
     {
         if (newSprites == null || newSprites.Length == 0) return;
@@ -142,5 +170,10 @@ public class PlayerController : MonoBehaviour
         frameIndex = 0;
         timer = 0f;
         sr.sprite = currentSprites[0];
+    }
+
+    private void FixedUpdate()
+    {
+        rb.MovePosition(rb.position + velocity * Time.fixedDeltaTime);
     }
 }

@@ -4,6 +4,7 @@ public class SoundManager : MonoBehaviour
 {
     public static SoundManager Instance;
 
+    [Header("사운드 볼륨")]
     public float bgmVolume = 0.8f;
     public float sfxVolume = 0.8f;
 
@@ -13,7 +14,7 @@ public class SoundManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            LoadVolume();
+            LoadVolumeSettings();
         }
         else
         {
@@ -23,19 +24,19 @@ public class SoundManager : MonoBehaviour
 
     public void SetBGMVolume(float volume)
     {
-        bgmVolume = volume;
-        PlayerPrefs.SetFloat("BGMVolume", volume);
+        bgmVolume = Mathf.Clamp01(volume);
+        PlayerPrefs.SetFloat("BGMVolume", bgmVolume);
         PlayerPrefs.Save();
     }
 
     public void SetSFXVolume(float volume)
     {
-        sfxVolume = volume;
-        PlayerPrefs.SetFloat("SFXVolume", volume);
+        sfxVolume = Mathf.Clamp01(volume);
+        PlayerPrefs.SetFloat("SFXVolume", sfxVolume);
         PlayerPrefs.Save();
     }
 
-    private void LoadVolume()
+    private void LoadVolumeSettings()
     {
         bgmVolume = PlayerPrefs.GetFloat("BGMVolume", 0.8f);
         sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 0.8f);

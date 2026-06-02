@@ -8,6 +8,7 @@ public class RunData
     public float bestTime = 0f;
     public int totalTrophies = 0;
     public int lastRunTrophies = 0;
+    public float timeBonus = 0f;        // 누적 시간 보너스
 }
 
 public class TrophyManager : MonoBehaviour
@@ -24,9 +25,7 @@ public class TrophyManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
             savePath = Application.persistentDataPath + "/TrophyData.json";
-
             LoadData();
-            Debug.Log("TrophyManager Awake 완료 - 총 트로피: " + currentRun.totalTrophies);
         }
         else
         {
@@ -43,23 +42,32 @@ public class TrophyManager : MonoBehaviour
 
     public void EndRun(float playTime)
     {
-        // 지난 런 트로피 저장
         currentRun.lastRunTrophies = currentRun.trophiesCollected;
 
         if (playTime > currentRun.bestTime)
             currentRun.bestTime = playTime;
 
+        // 트로피 1개당 0.5초 증가
+        currentRun.timeBonus += currentRun.trophiesCollected * 0.5f;
+
         SaveData();
 
-        // 새 런 시작을 위해 초기화
+        Debug.Log($"[EndRun] 트로피 {currentRun.lastRunTrophies}개 → +{currentRun.lastRunTrophies * 0.5f}초 (총 보너스: {currentRun.timeBonus}초)");
+
         currentRun.trophiesCollected = 0;
+    }
+
+    public float GetNextTimeLimit(float baseTime = 5f)
+    {
+        float finalTime = baseTime + currentRun.timeBonus;
+        Debug.Log($"[GetNextTimeLimit] 다음 판 시작: {finalTime}초");
+        return finalTime;
     }
 
     private void SaveData()
     {
         string json = JsonUtility.ToJson(currentRun, true);
         File.WriteAllText(savePath, json);
-        Debug.Log("JSON 저장 완료: " + savePath);
     }
 
     private void LoadData()
@@ -68,11 +76,6 @@ public class TrophyManager : MonoBehaviour
         {
             string json = File.ReadAllText(savePath);
             currentRun = JsonUtility.FromJson<RunData>(json);
-            Debug.Log("JSON 로드 완료");
-        }
-        else
-        {
-            Debug.Log("저장된 파일이 없음. 새로 시작");
         }
     }
 }

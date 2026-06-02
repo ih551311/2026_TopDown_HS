@@ -148,7 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c23fe0f67757d84880ae3286d90e61a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameTimer
-  totalTime: 30
+  levelData: {fileID: 11400000, guid: 44ec480cf0cfd7747a95f3c2ad356646, type: 2}
   timerText: {fileID: 1317657590}
   trophyCountText: {fileID: 0}
 --- !u!4 &6171007
@@ -13766,7 +13766,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TrophySpawner
   tilemap: {fileID: 260732668}
   trophyPrefab: {fileID: 1473742751455060257, guid: 18a9224975385c14b9f4278d38f187df, type: 3}
-  trophyCount: 35
+  levelData: {fileID: 0}
+  initialTrophyCount: 20
+  spawnInterval: 1
+  maxTrophies: 50
 --- !u!1 &282752792
 GameObject:
   m_ObjectHideFlags: 0
@@ -13827,9 +13830,11 @@ GameObject:
   - component: {fileID: 368244922}
   - component: {fileID: 368244921}
   - component: {fileID: 368244923}
+  - component: {fileID: 368244925}
+  - component: {fileID: 368244924}
   m_Layer: 0
   m_Name: teduri
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -20816,6 +20821,78 @@ TilemapCollider2D:
   m_MaximumTileChangeCount: 1000
   m_ExtrusionFactor: 0
   m_UseDelaunayMesh: 0
+--- !u!66 &368244924
+CompositeCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 368244919}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 1
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_GeometryType: 0
+  m_GenerationType: 0
+  m_EdgeRadius: 0
+  m_ColliderPaths: []
+  m_CompositePaths:
+    m_Paths: []
+  m_VertexDistance: 0.0005
+  m_OffsetDistance: 0.00005
+  m_UseDelaunayMesh: 0
+  m_CompositeGameObject: {fileID: 368244919}
+--- !u!50 &368244925
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 368244919}
+  m_BodyType: 2
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!1 &411455406
 GameObject:
   m_ObjectHideFlags: 0
@@ -372774,6 +372851,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   baseMoveSpeed: 20
+  dashSpeed: 15
+  dashDuration: 0.25
+  dashCooldown: 1.2
   spriteUp:
   - {fileID: -855298285791758126, guid: 99937baf221c6874e8e001f471c42c76, type: 3}
   - {fileID: 6937817954938267909, guid: dd862ce69476ef749a0dc047cad528b6, type: 3}
@@ -373116,6 +373196,7 @@ MonoBehaviour:
     bestTime: 0
     totalTrophies: 0
     lastRunTrophies: 0
+    timeBonus: 0
 --- !u!4 &1264577433
 Transform:
   m_ObjectHideFlags: 0

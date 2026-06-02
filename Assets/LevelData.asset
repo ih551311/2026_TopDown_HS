@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: LevelData
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
   trophyCount: 1
-  timeLimit: 30
+  timeLimit: 20

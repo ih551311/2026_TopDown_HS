@@ -4,16 +4,48 @@ using TMPro;
 
 public class GameTimer : MonoBehaviour
 {
-    [Header("설정")]
-    public float totalTime = 120f;           // 2분 = 120초
+    public static GameTimer Instance;
+
+    [Header("레벨 데이터")]
+    public LevelData levelData;           // ← 여기 연결 필수
+
     public TextMeshProUGUI timerText;
     public TextMeshProUGUI trophyCountText;
 
     private float currentTime;
 
+    private void Awake()
+    {
+        if (Instance == null)
+            Instance = this;
+    }
+
     private void Start()
     {
-        currentTime = totalTime;
+        // LevelData의 timeLimit을 최우선으로 사용
+        float startTime = 5f;   // 기본값
+
+        if (levelData != null)
+        {
+            startTime = levelData.timeLimit;   // LevelData에서 시간 가져오기
+            Debug.Log($"LevelData 적용됨 → 시작 시간 {startTime}초");
+        }
+        else
+        {
+            Debug.LogWarning("LevelData가 연결되지 않았습니다. 기본 5초 사용");
+        }
+
+        // TrophyManager의 시간 보너스 적용
+        if (TrophyManager.Instance != null)
+        {
+            currentTime = TrophyManager.Instance.GetNextTimeLimit(startTime);
+        }
+        else
+        {
+            currentTime = startTime;
+        }
+
+        Debug.Log($"최종 시작 시간: {currentTime}초");
     }
 
     private void Update()
@@ -23,7 +55,7 @@ public class GameTimer : MonoBehaviour
         if (currentTime <= 0)
         {
             currentTime = 0;
-            TimeUp();                    // 시간 종료 시 실행
+            TimeUp();
         }
 
         UpdateUI();
@@ -31,12 +63,10 @@ public class GameTimer : MonoBehaviour
 
     private void UpdateUI()
     {
-        // 타이머 표시
-        int min = Mathf.FloorToInt(currentTime / 60);
-        int sec = Mathf.FloorToInt(currentTime % 60);
-        timerText.text = $"{min:00}:{sec:00}";
+        int minutes = Mathf.FloorToInt(currentTime / 60);
+        int seconds = Mathf.FloorToInt(currentTime % 60);
+        timerText.text = $"{minutes:00}:{seconds:00}";
 
-        // 현재 트로피 수 표시
         if (TrophyManager.Instance != null && trophyCountText != null)
         {
             trophyCountText.text = "트로피: " + TrophyManager.Instance.currentRun.trophiesCollected;
@@ -45,13 +75,15 @@ public class GameTimer : MonoBehaviour
 
     private void TimeUp()
     {
-        // 트로피 데이터 저장
         if (TrophyManager.Instance != null)
-        {
-            TrophyManager.Instance.EndRun(120f - currentTime);
-        }
+            TrophyManager.Instance.EndRun(5f);
 
-        // 메인 화면으로 자동 이동
-        SceneManager.LoadScene("MainMenu");   // ← 메인 메뉴 씬 이름 확인!
+        SceneManager.LoadScene("MainMenu");
     }
-}
+
+    public void ReduceTime(float amount)
+    {
+        currentTime -= amount;
+        if (currentTime < 0) currentTime = 0;
+    }
+}   
