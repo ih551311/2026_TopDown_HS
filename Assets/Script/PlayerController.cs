@@ -4,7 +4,10 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
+    public LevelData levelData;
     public float baseMoveSpeed = 5f;
+
+    [Header("Dash")]
     public float dashSpeed = 15f;
     public float dashDuration = 0.25f;
     public float dashCooldown = 1.2f;
@@ -24,8 +27,10 @@ public class PlayerController : MonoBehaviour
     [Range(0.05f, 0.5f)]
     public float frameTime = 0.15f;
 
-    [Header("Sound")]
+    [Header("Engine Sound")]
     public AudioSource engineSound;
+    public float minPitch = 0.8f;
+    public float maxPitch = 1.6f;
 
     private Rigidbody2D rb;
     private SpriteRenderer sr;
@@ -52,7 +57,10 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        if (PlayerStats.Instance != null)
+        // LevelData에서 속도 가져오기
+        if (levelData != null)
+            currentMoveSpeed = levelData.playerSpeed;
+        else if (PlayerStats.Instance != null)
             currentMoveSpeed = PlayerStats.Instance.GetMoveSpeed();
         else
             currentMoveSpeed = baseMoveSpeed;
@@ -60,6 +68,11 @@ public class PlayerController : MonoBehaviour
         currentSprites = (spriteDown != null && spriteDown.Length > 0) ? spriteDown : null;
         if (currentSprites != null)
             sr.sprite = currentSprites[0];
+
+        if (engineSound != null)
+        {
+            engineSound.loop = true;
+        }
     }
 
     public void OnMove(InputValue value)
@@ -69,7 +82,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        // 대쉬 쿨타임 처리
+        // 대쉬 쿨타임
         if (dashCooldownLeft > 0) dashCooldownLeft -= Time.deltaTime;
 
         if (isDashing)
@@ -94,15 +107,25 @@ public class PlayerController : MonoBehaviour
         bool isActuallyMoving = input.sqrMagnitude > 0.01f;
 
         // 엔진 소리
-        if (isActuallyMoving)
+        if (engineSound != null)
         {
-            if (engineSound != null && !engineSound.isPlaying)
-                engineSound.Play();
-        }
-        else
-        {
-            if (engineSound != null && engineSound.isPlaying)
-                engineSound.Stop();
+            if (isActuallyMoving)
+            {
+                if (!engineSound.isPlaying)
+                    engineSound.Play();
+
+                float pitch = Mathf.Lerp(minPitch, maxPitch, rb.linearVelocity.magnitude / (dashSpeed * 1.2f));
+                engineSound.pitch = pitch;
+            }
+            else
+            {
+                if (engineSound.isPlaying)
+                {
+                    engineSound.pitch = Mathf.Lerp(engineSound.pitch, 0.6f, Time.deltaTime * 3f);
+                    if (engineSound.pitch <= 0.65f)
+                        engineSound.Stop();
+                }
+            }
         }
 
         // 애니메이션
@@ -135,14 +158,15 @@ public class PlayerController : MonoBehaviour
         dashTimeLeft = dashDuration;
     }
 
-    // ==================== 벽 충돌 (시간 3초 감소) ====================
+    // ==================== 벽 충돌 (스테이지별 증가량) ====================
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Wall"))
         {
-            if (GameTimer.Instance != null)
+            if (GameManager.Instance != null && GameTimer.Instance != null)
             {
-                GameTimer.Instance.ReduceTime(3f);
+                float bonus = GameManager.Instance.GetWallBonus();
+                GameTimer.Instance.ReduceTime(bonus);   // 벽에 부딪히면 다음 스테이지 시간 증가
             }
         }
     }

@@ -1,18 +1,15 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using TMPro;
 
 public class GameTimer : MonoBehaviour
 {
     public static GameTimer Instance;
 
-    [Header("레벨 데이터")]
-    public LevelData levelData;           // ← 여기 연결 필수
-
-    public TextMeshProUGUI timerText;
     public TextMeshProUGUI trophyCountText;
+    public TextMeshProUGUI nextStageText;
 
-    private float currentTime;
+    private float stageTimer = 0f;
+    private float stageGoalTime = 30f;
 
     private void Awake()
     {
@@ -22,40 +19,21 @@ public class GameTimer : MonoBehaviour
 
     private void Start()
     {
-        // LevelData의 timeLimit을 최우선으로 사용
-        float startTime = 5f;   // 기본값
-
-        if (levelData != null)
-        {
-            startTime = levelData.timeLimit;   // LevelData에서 시간 가져오기
-            Debug.Log($"LevelData 적용됨 → 시작 시간 {startTime}초");
-        }
-        else
-        {
-            Debug.LogWarning("LevelData가 연결되지 않았습니다. 기본 5초 사용");
-        }
-
-        // TrophyManager의 시간 보너스 적용
-        if (TrophyManager.Instance != null)
-        {
-            currentTime = TrophyManager.Instance.GetNextTimeLimit(startTime);
-        }
-        else
-        {
-            currentTime = startTime;
-        }
-
-        Debug.Log($"최종 시작 시간: {currentTime}초");
+        stageTimer = 0f;
+        stageGoalTime = 30f;
     }
 
     private void Update()
     {
-        currentTime -= Time.deltaTime;
+        stageTimer += Time.deltaTime;
 
-        if (currentTime <= 0)
+        if (stageTimer >= stageGoalTime)
         {
-            currentTime = 0;
-            TimeUp();
+            if (GameManager.Instance != null)
+                GameManager.Instance.NextStage();
+
+            stageTimer = 0f;
+            stageGoalTime = 30f;
         }
 
         UpdateUI();
@@ -63,27 +41,28 @@ public class GameTimer : MonoBehaviour
 
     private void UpdateUI()
     {
-        int minutes = Mathf.FloorToInt(currentTime / 60);
-        int seconds = Mathf.FloorToInt(currentTime % 60);
-        timerText.text = $"{minutes:00}:{seconds:00}";
-
         if (TrophyManager.Instance != null && trophyCountText != null)
         {
             trophyCountText.text = "트로피: " + TrophyManager.Instance.currentRun.trophiesCollected;
         }
+
+        if (nextStageText != null)
+        {
+            float timeLeft = stageGoalTime - stageTimer;
+            if (timeLeft < 0) timeLeft = 0;
+            nextStageText.text = $"다음 스테이지까지: {timeLeft:F0}초";
+        }
     }
 
-    private void TimeUp()
+    public void AddStageGoalTime(float amount)
     {
-        if (TrophyManager.Instance != null)
-            TrophyManager.Instance.EndRun(5f);
-
-        SceneManager.LoadScene("MainMenu");
+        stageGoalTime -= amount;        // 트로피 먹으면 시간 감소
+        if (stageGoalTime < 8f) stageGoalTime = 8f;
     }
 
     public void ReduceTime(float amount)
     {
-        currentTime -= amount;
-        if (currentTime < 0) currentTime = 0;
+        stageGoalTime += amount;        // 벽 충돌 시 시간 증가
+        Debug.Log($"벽 충돌! +{amount}초 (현재 목표: {stageGoalTime}초)");
     }
-}   
+}

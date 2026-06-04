@@ -6,10 +6,14 @@ public class Trophy : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            TrophyManager.Instance.CollectTrophy();
+            if (TrophyManager.Instance != null)
+                TrophyManager.Instance.CollectTrophy();
 
-            // Spawner에게 알려서 리스트에서 제거
-            TrophySpawner spawner = FindObjectOfType<TrophySpawner>();
+            // 트로피 먹으면 다음 스테이지까지 필요한 시간 0.5초 감소
+            if (GameTimer.Instance != null)
+                GameTimer.Instance.AddStageGoalTime(0.5f);
+
+            TrophySpawner spawner = FindAnyObjectByType<TrophySpawner>();
             spawner?.RemoveTrophy(gameObject);
 
             Destroy(gameObject);
