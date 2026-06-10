@@ -8,9 +8,8 @@ public class PlayerController : MonoBehaviour
     public float baseMoveSpeed = 5f;
 
     [Header("Dash")]
-    public float dashSpeed = 15f;
-    public float dashDuration = 0.25f;
-    public float dashCooldown = 1.2f;
+    public float baseDashSpeed = 15f;
+    public float baseDashCooldown = 1.2f;
 
     [Header("Sprites - 8 Directions")]
     public Sprite[] spriteUp;
@@ -41,6 +40,9 @@ public class PlayerController : MonoBehaviour
     private float timer = 0f;
 
     private float currentMoveSpeed;
+    private float currentDashSpeed;
+    private float currentDashCooldown;
+
     private bool isDashing = false;
     private float dashTimeLeft = 0f;
     private float dashCooldownLeft = 0f;
@@ -57,22 +59,33 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        // LevelData에서 속도 가져오기
-        if (levelData != null)
-            currentMoveSpeed = levelData.playerSpeed;
-        else if (PlayerStats.Instance != null)
-            currentMoveSpeed = PlayerStats.Instance.GetMoveSpeed();
-        else
-            currentMoveSpeed = baseMoveSpeed;
+        ApplyPermanentUpgrades();
 
         currentSprites = (spriteDown != null && spriteDown.Length > 0) ? spriteDown : null;
         if (currentSprites != null)
             sr.sprite = currentSprites[0];
 
         if (engineSound != null)
-        {
             engineSound.loop = true;
+    }
+
+    // 영구 업그레이드 적용
+    private void ApplyPermanentUpgrades()
+    {
+        currentMoveSpeed = baseMoveSpeed;
+        currentDashSpeed = baseDashSpeed;
+        currentDashCooldown = baseDashCooldown;
+
+        if (PermanentStatsManager.Instance != null)
+        {
+            var stats = PermanentStatsManager.Instance.stats;
+            currentMoveSpeed += stats.speedBonus;
+            currentDashSpeed += stats.dashSpeedBonus;
+            currentDashCooldown = Mathf.Max(0.3f, currentDashCooldown - stats.dashCooldownReduction);
         }
+
+        if (levelData != null)
+            currentMoveSpeed += levelData.playerSpeed;
     }
 
     public void OnMove(InputValue value)
@@ -91,7 +104,7 @@ public class PlayerController : MonoBehaviour
             if (dashTimeLeft <= 0)
             {
                 isDashing = false;
-                dashCooldownLeft = dashCooldown;
+                dashCooldownLeft = currentDashCooldown;
             }
         }
 
@@ -101,7 +114,7 @@ public class PlayerController : MonoBehaviour
             StartDash();
         }
 
-        float speed = isDashing ? dashSpeed : currentMoveSpeed;
+        float speed = isDashing ? currentDashSpeed : currentMoveSpeed;
         velocity = input.normalized * speed;
 
         bool isActuallyMoving = input.sqrMagnitude > 0.01f;
@@ -114,7 +127,7 @@ public class PlayerController : MonoBehaviour
                 if (!engineSound.isPlaying)
                     engineSound.Play();
 
-                float pitch = Mathf.Lerp(minPitch, maxPitch, rb.linearVelocity.magnitude / (dashSpeed * 1.2f));
+                float pitch = Mathf.Lerp(minPitch, maxPitch, rb.linearVelocity.magnitude / (currentDashSpeed * 1.2f));
                 engineSound.pitch = pitch;
             }
             else
@@ -155,20 +168,13 @@ public class PlayerController : MonoBehaviour
     private void StartDash()
     {
         isDashing = true;
-        dashTimeLeft = dashDuration;
+        dashTimeLeft = 0.25f;
     }
 
-    // ==================== 벽 충돌 (스테이지별 증가량) ====================
+    // 벽 충돌 페널티 완전 삭제
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Wall"))
-        {
-            if (GameManager.Instance != null && GameTimer.Instance != null)
-            {
-                float bonus = GameManager.Instance.GetWallBonus();
-                GameTimer.Instance.ReduceTime(bonus);   // 벽에 부딪히면 다음 스테이지 시간 증가
-            }
-        }
+        // 벽 시스템 삭제됨
     }
 
     private Sprite[] GetDirectionSprites(float angle)
