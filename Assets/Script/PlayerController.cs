@@ -5,7 +5,7 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
     public LevelData levelData;
-    public float baseMoveSpeed = 5f;
+    public float baseMoveSpeed = 5.0f;        // ← 초기 속도 (5.0)
 
     [Header("Dash")]
     public float baseDashSpeed = 15f;
@@ -59,7 +59,20 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        ApplyPermanentUpgrades();
+        // 초기 속도 설정
+        currentMoveSpeed = baseMoveSpeed;
+
+        if (levelData != null)
+            currentMoveSpeed += levelData.playerSpeed;
+
+        if (PermanentStatsManager.Instance != null)
+        {
+            var stats = PermanentStatsManager.Instance.stats;
+            currentMoveSpeed += stats.speedBonus;
+        }
+
+        currentDashSpeed = baseDashSpeed;
+        currentDashCooldown = baseDashCooldown;
 
         currentSprites = (spriteDown != null && spriteDown.Length > 0) ? spriteDown : null;
         if (currentSprites != null)
@@ -69,25 +82,6 @@ public class PlayerController : MonoBehaviour
             engineSound.loop = true;
     }
 
-    // 영구 업그레이드 적용
-    private void ApplyPermanentUpgrades()
-    {
-        currentMoveSpeed = baseMoveSpeed;
-        currentDashSpeed = baseDashSpeed;
-        currentDashCooldown = baseDashCooldown;
-
-        if (PermanentStatsManager.Instance != null)
-        {
-            var stats = PermanentStatsManager.Instance.stats;
-            currentMoveSpeed += stats.speedBonus;
-            currentDashSpeed += stats.dashSpeedBonus;
-            currentDashCooldown = Mathf.Max(0.3f, currentDashCooldown - stats.dashCooldownReduction);
-        }
-
-        if (levelData != null)
-            currentMoveSpeed += levelData.playerSpeed;
-    }
-
     public void OnMove(InputValue value)
     {
         input = value.Get<Vector2>();
@@ -95,7 +89,6 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        // 대쉬 쿨타임
         if (dashCooldownLeft > 0) dashCooldownLeft -= Time.deltaTime;
 
         if (isDashing)
@@ -108,7 +101,6 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        // Shift로 대쉬
         if (Keyboard.current.shiftKey.wasPressedThisFrame && !isDashing && dashCooldownLeft <= 0f)
         {
             StartDash();
@@ -119,7 +111,6 @@ public class PlayerController : MonoBehaviour
 
         bool isActuallyMoving = input.sqrMagnitude > 0.01f;
 
-        // 엔진 소리
         if (engineSound != null)
         {
             if (isActuallyMoving)
@@ -141,7 +132,6 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        // 애니메이션
         if (isActuallyMoving)
         {
             timer += Time.deltaTime;
@@ -171,10 +161,9 @@ public class PlayerController : MonoBehaviour
         dashTimeLeft = 0.25f;
     }
 
-    // 벽 충돌 페널티 완전 삭제
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        // 벽 시스템 삭제됨
+        // 벽 효과 없음
     }
 
     private Sprite[] GetDirectionSprites(float angle)

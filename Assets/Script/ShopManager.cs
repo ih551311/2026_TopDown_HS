@@ -27,6 +27,7 @@ public class ShopManager : MonoBehaviour
         if (shopPanel != null)
         {
             shopPanel.SetActive(true);
+            Time.timeScale = 0f;        // 시간 정지
             UpdateUI();
         }
     }
@@ -34,18 +35,19 @@ public class ShopManager : MonoBehaviour
     public void CloseShop()
     {
         if (shopPanel != null)
+        {
             shopPanel.SetActive(false);
+            Time.timeScale = 1f;        // 시간 재개
+        }
     }
 
     private void UpdateUI()
     {
-        // 트로피 표시
         if (trophyText != null && TrophyManager.Instance != null)
         {
             trophyText.text = $"트로피: {TrophyManager.Instance.currentRun.trophiesCollected}";
         }
 
-        // 가격 + 현황 표시
         if (statusText != null)
         {
             string content = "=== 상점 ===\n\n";
@@ -57,14 +59,10 @@ public class ShopManager : MonoBehaviour
                 content += $"[현재 업그레이드]\n";
                 content += $"• 이동 속도: +{stats.speedBonus:F1}\n";
                 content += $"• 대쉬 속도: +{stats.dashSpeedBonus:F1}\n";
-                content += $"• 추가 트로피 스폰: +{stats.extraTrophySpawn}\n\n";
+                content += $"• 추가 트로피: +{stats.extraTrophySpawn}\n\n";
             }
 
-            // 가격 정보
-            content += $"[가격]\n";
-            content += $"• 이동 속도 업 : {speedCost}개\n";
-            content += $"• 대쉬 속도 업 : {dashSpeedCost}개\n";
-            content += $"• 추가 트로피 스폰 : {extraTrophyCost}개";
+           
 
             statusText.text = content;
         }
@@ -115,7 +113,6 @@ public class ShopManager : MonoBehaviour
             PermanentStatsManager.Instance.stats = new PermanentStats();
             PermanentStatsManager.Instance.SaveStats();
             UpdateUI();
-            Debug.Log("모든 업그레이드 초기화 완료");
         }
     }
 
@@ -133,7 +130,6 @@ public class ShopManager : MonoBehaviour
             if (TrophyManager.Instance != null)
                 TrophyManager.Instance.currentRun.trophiesCollected = 0;
             UpdateUI();
-            Debug.Log("스테이지 초기화 완료");
         }
     }
 }
