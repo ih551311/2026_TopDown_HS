@@ -13899,8 +13899,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TrophySpawner
   tilemap: {fileID: 260732668}
   trophyPrefab: {fileID: 1473742751455060257, guid: 18a9224975385c14b9f4278d38f187df, type: 3}
-  levelData: {fileID: 0}
-  initialTrophyCount: 20
+  baseTrophyCount: 8
   spawnInterval: 1
   maxTrophies: 50
 --- !u!1 &282752792
@@ -374005,7 +374004,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1570651534}
         m_TargetAssemblyTypeName: ShopManager, Assembly-CSharp
-        m_MethodName: BuyTotalTrophyUpgrade
+        m_MethodName: BuyExtraTrophySpawn
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -374952,7 +374951,7 @@ MonoBehaviour:
   statusText: {fileID: 1907346321}
   speedCost: 8
   dashSpeedCost: 12
-  dashCooldownCost: 10
+  extraTrophyCost: 20
 --- !u!4 &1570651535
 Transform:
   m_ObjectHideFlags: 0
