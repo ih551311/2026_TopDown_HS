@@ -11,8 +11,10 @@ public class GameTimer : MonoBehaviour
     public TextMeshProUGUI trophyCountText;
     public TextMeshProUGUI stageText;
 
-    private float currentTime;
+    private float currentTime = 60f;
     private int goalTrophies = 10;
+
+    private bool stageCleared = false;   // 중복 방지
 
     private void Awake()
     {
@@ -28,13 +30,6 @@ public class GameTimer : MonoBehaviour
 
     private void Update()
     {
-        // 상점이 열려있으면 시간 멈춤
-        if (ShopManager.Instance != null && ShopManager.Instance.shopPanel.activeSelf)
-        {
-            // 시간 멈춤
-            return;
-        }
-
         currentTime -= Time.deltaTime;
 
         if (currentTime <= 0)
@@ -43,15 +38,18 @@ public class GameTimer : MonoBehaviour
             SceneManager.LoadScene("MainMenu");
         }
 
-        // 목표 트로피 달성 체크
-        if (TrophyManager.Instance != null &&
+        // 목표 달성 체크
+        if (!stageCleared && TrophyManager.Instance != null &&
             TrophyManager.Instance.currentRun.trophiesCollected >= goalTrophies)
         {
+            stageCleared = true;
             if (GameManager.Instance != null)
                 GameManager.Instance.NextStage();
 
+            // 다음 스테이지 준비
             currentTime = 60f;
             UpdateGoal();
+            stageCleared = false;   // 다음 스테이지 준비
         }
 
         UpdateUI();
@@ -60,7 +58,7 @@ public class GameTimer : MonoBehaviour
     private void UpdateGoal()
     {
         int stage = GameManager.Instance != null ? GameManager.Instance.currentStage : 1;
-        goalTrophies = 10 + (stage - 1) * 5;
+        goalTrophies = 10 + (stage - 1) * 5;   // 10, 15, 20, 25...
     }
 
     private void UpdateUI()

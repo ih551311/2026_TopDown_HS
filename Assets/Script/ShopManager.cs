@@ -27,7 +27,7 @@ public class ShopManager : MonoBehaviour
         if (shopPanel != null)
         {
             shopPanel.SetActive(true);
-            Time.timeScale = 0f;        // 시간 정지
+            Time.timeScale = 0f;
             UpdateUI();
         }
     }
@@ -37,32 +37,35 @@ public class ShopManager : MonoBehaviour
         if (shopPanel != null)
         {
             shopPanel.SetActive(false);
-            Time.timeScale = 1f;        // 시간 재개
+            Time.timeScale = 1f;
         }
     }
 
     private void UpdateUI()
     {
+        // 트로피 표시
         if (trophyText != null && TrophyManager.Instance != null)
         {
             trophyText.text = $"트로피: {TrophyManager.Instance.currentRun.trophiesCollected}";
         }
 
+        // 업그레이드 현황만 표시 (가격 제거)
         if (statusText != null)
         {
             string content = "=== 상점 ===\n\n";
 
-            // 현재 업그레이드 현황
             if (PermanentStatsManager.Instance != null)
             {
                 var stats = PermanentStatsManager.Instance.stats;
                 content += $"[현재 업그레이드]\n";
                 content += $"• 이동 속도: +{stats.speedBonus:F1}\n";
                 content += $"• 대쉬 속도: +{stats.dashSpeedBonus:F1}\n";
-                content += $"• 추가 트로피: +{stats.extraTrophySpawn}\n\n";
+                content += $"• 추가 트로피 스폰: +{stats.extraTrophySpawn}";
             }
-
-           
+            else
+            {
+                content += "업그레이드 정보를 불러올 수 없습니다.";
+            }
 
             statusText.text = content;
         }

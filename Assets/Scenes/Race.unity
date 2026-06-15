@@ -373476,8 +373476,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   levelData: {fileID: 0}
-  baseMoveSpeed: 8
-  baseDashSpeed: 15
+  baseMoveSpeed: 20
+  baseDashSpeed: 30
   baseDashCooldown: 1.2
   spriteUp:
   - {fileID: -855298285791758126, guid: 99937baf221c6874e8e001f471c42c76, type: 3}
@@ -374626,8 +374626,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TrophyManager
   currentRun:
-    trophiesCollected: 0
-    totalTrophies: 0
+    trophiesCollected: 1
+    totalTrophies: 30
 --- !u!4 &1264577433
 Transform:
   m_ObjectHideFlags: 0
@@ -375763,7 +375763,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1570651534}
         m_TargetAssemblyTypeName: ShopManager, Assembly-CSharp
-        m_MethodName: GoToMainMenu
+        m_MethodName: OpenShop
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -376115,10 +376115,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   currentStage: 1
-  stageText: {fileID: 0}
+  stageText: {fileID: 1751341595}
   stageClearText: {fileID: 174498870}
   nextStageText: {fileID: 1789990913}
-  effectDuration: 2.5
 --- !u!4 &2032809892
 Transform:
   m_ObjectHideFlags: 0
